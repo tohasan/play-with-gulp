@@ -28,6 +28,12 @@ const newer = require('gulp-newer');
 const autoprefixer = require('gulp-autoprefixer');
 // Notifications during build (for example, about errors)
 const notify = require('gulp-notify');
+// Extends pipe method of stream, for example, to add error handler
+// We use this plugin to catch errors on any pipe in pipeline
+// As alternative we can use following plugins:
+//      - multipipe,
+//      - stream-combiner2
+const plumber = require('gulp-plumber');
 
 // Plugins for caching:
 //      - gulp-remember - caches files by name
@@ -50,15 +56,17 @@ gulp.task('styles', function () {
     // Stylus has cache so rebuild is not hard and long operation
 
     return gulp.src('src/styles/styles.styl')
+        .pipe(plumber({
+            errorHandler: notify.onError(function (err) {
+                return {
+                    title: 'styles',
+                    message: err.message
+                };
+            })
+        }))
         .pipe(debug({ title: 'src' }))
         .pipe(gulpIf(isDev, sourcemaps.init()))
         .pipe(stylus())
-        .on('error', notify.onError(function (err) {
-            return {
-                title: 'styles',
-                message: err.message
-            };
-        }))
         .pipe(autoprefixer())
         .pipe(gulpIf(isDev, sourcemaps.write('.')))
         .pipe(debug({ title: 'stylus' }))
