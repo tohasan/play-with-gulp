@@ -1,0 +1,18 @@
+{
+  "name": "play-with-gulp",
+  "version": "1.0.0",
+  "description": "experiments with gulp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "gulp",
+    "play",
+    "game",
+    "test",
+    "experiments"
+  ],
+  "author": "tohasan",
+  "license": "ISC"
+}
