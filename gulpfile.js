@@ -11,11 +11,14 @@ const gulp = require('gulp');
 const stylus = require('gulp-stylus');
 const concat = require('gulp-concat');
 const debug = require('gulp-debug');
+const sourcemaps = require('gulp-sourcemaps');
 
 gulp.task('styles', function () {
     return gulp.src('src/styles/styles.styl')
         .pipe(debug({ title: 'src' }))
+        .pipe(sourcemaps.init())
         .pipe(stylus())
+        .pipe(sourcemaps.write('.'))
         .pipe(debug({ title: 'stylus' }))
         .pipe(gulp.dest('public'));
 });
