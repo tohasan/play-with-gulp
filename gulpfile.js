@@ -34,12 +34,16 @@ const notify = require('gulp-notify');
 //      - multipipe,
 //      - stream-combiner2
 const plumber = require('gulp-plumber');
+// Combines pipes
+const combiner = require('stream-combiner2').obj;
 // Allows write simple pipes as streams of object
 const through2 = require('through2').obj;
 // File object
 const File = require('vinyl');
 // Validates javascript
 const eslint = require('gulp-eslint');
+// Module works with file system
+const fs = require('fs');
 
 // Plugins for caching:
 //      - gulp-remember - caches files by name
@@ -96,9 +100,50 @@ gulp.task('pages', function () {
 });
 
 gulp.task('lint', function () {
-    return gulp.src(['src/**/*.js', 'gulpfile.js'])
-        .pipe(eslint())
+    const eslintResults = {};
+    const cacheEslintFilePath = `${process.cwd()}/tmp/eslint.results.json`;
+    let cacheEslint = {};
+    // Check that cache exists
+    if (fs.existsSync(cacheEslintFilePath)) {
+        // If lint cache exists then get it
+        cacheEslint = JSON.parse(fs.readFileSync(cacheEslintFilePath));
+    }
+
+    return gulp.src(['src/**/*.js', 'gulpfile.js'], { read: false })
+        .pipe(debug({ title: 'src' }))
+        .pipe(through2((file, encoding, callback) => {
+            // If file is in lint cache and
+            // modification date of processing file equals modification date in cache
+            // then do not lint file because we know result
+            const cacheInfo = cacheEslint[file.path];
+            if (cacheInfo !== undefined && cacheInfo.mtime === file.stat.mtime.toJSON()) {
+                file.eslint = cacheInfo.eslint;
+            }
+            // Throw file to the next stream
+            callback(null, file);
+        }))
+        .pipe(gulpIf(
+            file => !file.eslint,
+            combiner(
+                through2((file, encoding, callback) => {
+                    file.contents = fs.readFileSync(file.path);
+                    callback(null, file);
+                }),
+                debug({ title: 'eslint' }),
+                eslint(),
+                through2((file, encoding, callback) => {
+                    eslintResults[file.path] = {
+                        eslint: file.eslint,
+                        mtime: file.stat.mtime
+                    };
+                    callback(null, file);
+                })
+            )
+        ))
         .pipe(eslint.format())
+        .on('end', () => {
+            fs.writeFileSync(cacheEslintFilePath, JSON.stringify(eslintResults));
+        })
         .pipe(eslint.failAfterError());
 });
 
