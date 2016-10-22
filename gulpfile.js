@@ -36,6 +36,8 @@ const notify = require('gulp-notify');
 const plumber = require('gulp-plumber');
 // Allows write simple pipes as streams of object
 const through2 = require('through2').obj;
+// File object
+const File = require('vinyl');
 
 // Plugins for caching:
 //      - gulp-remember - caches files by name
@@ -100,6 +102,37 @@ gulp.task('through', function () {
             callback(null, file);
         }))
         .pipe(gulp.dest('dest'));
+});
+
+gulp.task('manifest', function () {
+    const mtimes = {};
+
+    return gulp.src('src/**')
+        .pipe(through2(
+            function (file, encoding, callback) {
+                mtimes[file.relative] = file.stat.mtime;
+                callback(null, file);
+            }, function (callback) {
+                const manifest = new File({
+                    // cwd, base, path, contents
+                    contents: new Buffer(JSON.stringify(mtimes)),
+                    base: process.cwd(),
+                    path: process.cwd() + '/manifest.json'
+                });
+                manifest.isManifest = true;
+                // Tu add manifest to pipeline we must use push
+                // instead of callback. In this case callback is not suitable option.
+                this.push(manifest);
+                callback();
+            }
+        ))
+        .pipe(gulp.dest(function (file) {
+            if (file.isManifest) {
+                return process.cwd();
+            } else {
+                return 'public';
+            }
+        }));
 });
 
 // Watch uses chokidar inside yourself.
