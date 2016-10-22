@@ -1,0 +1,16 @@
+/**
+ * Created with IntelliJ IDEA (in accordance with File | Settings | File and Code Templates).
+ * User: tohasan
+ * Date: 22.10.2016
+ * Time: 8:32
+ */
+
+
+const gulp = require('gulp');
+
+gulp.task('hello', function (callback) {
+    console.log('hello!'); // NOSONAR
+
+    // Signal async completion
+    callback();
+});
