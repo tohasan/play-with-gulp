@@ -32,6 +32,12 @@ const autoprefixer = require('gulp-autoprefixer');
 //      - gulp-cached - filters files if content of them is not changed
 //      - gulp-cache - caches result of stream in the filesystem
 
+// Plugins for browser reloading:
+//      - livereload
+//      - browser-sync
+
+const browserSync = require('browser-sync').create();
+
 const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'dev';
 
 gulp.task('clean', function () {
@@ -80,6 +86,14 @@ gulp.task('watch', function () {
     gulp.watch('src/*.html', gulp.series('pages'));
 });
 
+gulp.task('serve', function () {
+    browserSync.init({
+        server: 'public'
+    });
+
+    browserSync.watch('public/**')
+        .on('change', browserSync.reload);
+});
 
 gulp.task('default', gulp.series(
     'clean',
@@ -90,4 +104,7 @@ gulp.task('default', gulp.series(
     )
 ));
 
-gulp.task('dev', gulp.series('default', 'watch'));
+gulp.task('dev', gulp.series(
+    'default',
+    gulp.parallel('watch', 'serve')
+));
