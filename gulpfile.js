@@ -7,13 +7,30 @@
 
 'use strict'; // NOSONAR
 
+// Main Gulp module
 const gulp = require('gulp');
+// Compiles stylus to css
 const stylus = require('gulp-stylus');
+// Concatenates input files
 const concat = require('gulp-concat');
+// Logs output of pipelines
 const debug = require('gulp-debug');
+// Generates source maps for styles and scripts
 const sourcemaps = require('gulp-sourcemaps');
+// Pipeline conditions
 const gulpIf = require('gulp-if');
+// General module (not specific gulp plugin) to delete file and directories
 const del = require('del');
+// Checks that file in destination is older that file in source
+// You can use another plugin: gulp-changed
+const newer = require('gulp-newer');
+// Adds vendor prefixes in css to extend cross-browser support
+const autoprefixer = require('gulp-autoprefixer');
+
+// Plugins for caching:
+//      - gulp-remember - caches files by name
+//      - gulp-cached - filters files if content of them is not changed
+//      - gulp-cache - caches result of stream in the filesystem
 
 const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'dev';
 
@@ -28,6 +45,7 @@ gulp.task('styles', function () {
         .pipe(debug({ title: 'src' }))
         .pipe(gulpIf(isDev, sourcemaps.init()))
         .pipe(stylus())
+        .pipe(autoprefixer())
         .pipe(gulpIf(isDev, sourcemaps.write('.')))
         .pipe(debug({ title: 'stylus' }))
         .pipe(gulp.dest('public'));
@@ -36,6 +54,7 @@ gulp.task('styles', function () {
 gulp.task('assets', function () {
     // Copy only files changed after last run of the task
     return gulp.src('src/assets/**', { since: gulp.lastRun('assets') })
+        .pipe(newer('public'))
         .pipe(debug({ title: 'assets' }))
         .pipe(gulp.dest('public'));
 });
@@ -43,6 +62,7 @@ gulp.task('assets', function () {
 gulp.task('pages', function () {
     // Copy only files changed after last run of the task
     return gulp.src('src/*.html', { since: gulp.lastRun('assets') })
+        .pipe(newer('public'))
         .pipe(debug({ title: 'pages' }))
         .pipe(gulp.dest('public'));
 });
