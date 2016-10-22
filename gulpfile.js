@@ -12,13 +12,16 @@ const stylus = require('gulp-stylus');
 const concat = require('gulp-concat');
 const debug = require('gulp-debug');
 const sourcemaps = require('gulp-sourcemaps');
+const gulpIf = require('gulp-if');
+
+const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'dev';
 
 gulp.task('styles', function () {
     return gulp.src('src/styles/styles.styl')
         .pipe(debug({ title: 'src' }))
-        .pipe(sourcemaps.init())
+        .pipe(gulpIf(isDev, sourcemaps.init()))
         .pipe(stylus())
-        .pipe(sourcemaps.write('.'))
+        .pipe(gulpIf(isDev, sourcemaps.write('.')))
         .pipe(debug({ title: 'stylus' }))
         .pipe(gulp.dest('public'));
 });
