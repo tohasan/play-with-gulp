@@ -13,8 +13,13 @@ const concat = require('gulp-concat');
 const debug = require('gulp-debug');
 const sourcemaps = require('gulp-sourcemaps');
 const gulpIf = require('gulp-if');
+const del = require('del');
 
 const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'dev';
+
+gulp.task('clean', function () {
+    return del('public');
+});
 
 gulp.task('styles', function () {
     return gulp.src('src/styles/styles.styl')
@@ -26,4 +31,21 @@ gulp.task('styles', function () {
         .pipe(gulp.dest('public'));
 });
 
-gulp.task('default', gulp.series('styles'));
+gulp.task('assets', function () {
+    return gulp.src('src/assets/**')
+        .pipe(gulp.dest('public'));
+});
+
+gulp.task('pages', function () {
+    return gulp.src('src/*.html')
+        .pipe(gulp.dest('public'));
+});
+
+gulp.task('default', gulp.series(
+    'clean',
+    gulp.parallel(
+        'styles',
+        'assets',
+        'pages'
+    )
+));
