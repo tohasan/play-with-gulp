@@ -88,3 +88,4 @@ jspm_packages
 ### Custom rules
 
 dest/
+public/
