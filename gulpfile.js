@@ -108,10 +108,14 @@ gulp.task('manifest', function () {
     const mtimes = {};
 
     return gulp.src('src/**')
+        .pipe(through2(function (file, encoding, callback) {
+            mtimes[file.relative] = file.stat.mtime;
+            callback(null, file);
+        }))
+        .pipe(gulp.dest('dest'))
         .pipe(through2(
             function (file, encoding, callback) {
-                mtimes[file.relative] = file.stat.mtime;
-                callback(null, file);
+                callback();
             }, function (callback) {
                 const manifest = new File({
                     // cwd, base, path, contents
@@ -126,13 +130,7 @@ gulp.task('manifest', function () {
                 callback();
             }
         ))
-        .pipe(gulp.dest(function (file) {
-            if (file.isManifest) {
-                return process.cwd();
-            } else {
-                return 'public';
-            }
-        }));
+        .pipe(gulp.dest('.'));
 });
 
 // Watch uses chokidar inside yourself.
