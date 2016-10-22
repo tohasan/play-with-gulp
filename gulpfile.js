@@ -22,6 +22,8 @@ gulp.task('clean', function () {
 });
 
 gulp.task('styles', function () {
+    // Stylus has cache so rebuild is not hard and long operation
+
     return gulp.src('src/styles/styles.styl')
         .pipe(debug({ title: 'src' }))
         .pipe(gulpIf(isDev, sourcemaps.init()))
@@ -32,14 +34,32 @@ gulp.task('styles', function () {
 });
 
 gulp.task('assets', function () {
-    return gulp.src('src/assets/**')
+    // Copy only files changed after last run of the task
+    return gulp.src('src/assets/**', { since: gulp.lastRun('assets') })
+        .pipe(debug({ title: 'assets' }))
         .pipe(gulp.dest('public'));
 });
 
 gulp.task('pages', function () {
-    return gulp.src('src/*.html')
+    // Copy only files changed after last run of the task
+    return gulp.src('src/*.html', { since: gulp.lastRun('assets') })
+        .pipe(debug({ title: 'pages' }))
         .pipe(gulp.dest('public'));
 });
+
+// Watch uses chokidar inside yourself.
+// Chokidar is the best tool to crossplatform watching files
+// https://github.com/paulmillr/chokidar
+// Google 'handling the delete event on watching'
+// if you want delete files from public when origin files deleted:
+// https://github.com/gulpjs/gulp/blob/master/docs/recipes/handling-the-delete-event-on-watch.md
+
+gulp.task('watch', function () {
+    gulp.watch('src/styles/**/*.styl', gulp.series('styles'));
+    gulp.watch('src/assets/**', gulp.series('assets'));
+    gulp.watch('src/*.html', gulp.series('pages'));
+});
+
 
 gulp.task('default', gulp.series(
     'clean',
@@ -49,3 +69,5 @@ gulp.task('default', gulp.series(
         'pages'
     )
 ));
+
+gulp.task('dev', gulp.series('default', 'watch'));
