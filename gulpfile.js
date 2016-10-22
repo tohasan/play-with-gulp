@@ -38,6 +38,8 @@ const plumber = require('gulp-plumber');
 const through2 = require('through2').obj;
 // File object
 const File = require('vinyl');
+// Validates javascript
+const eslint = require('gulp-eslint');
 
 // Plugins for caching:
 //      - gulp-remember - caches files by name
@@ -91,6 +93,13 @@ gulp.task('pages', function () {
         .pipe(newer('public'))
         .pipe(debug({ title: 'pages' }))
         .pipe(gulp.dest('public'));
+});
+
+gulp.task('lint', function () {
+    return gulp.src(['src/**/*.js', 'gulpfile.js'])
+        .pipe(eslint())
+        .pipe(eslint.format())
+        .pipe(eslint.failAfterError());
 });
 
 gulp.task('through', function () {
