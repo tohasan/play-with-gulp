@@ -26,6 +26,7 @@
     "gulp-debug": "2.1.2",
     "gulp-if": "2.0.1",
     "gulp-newer": "1.3.0",
+    "gulp-notify": "2.2.0",
     "gulp-sourcemaps": "2.1.1",
     "gulp-stylus": "2.5.0",
     "node-static": "0.7.9"

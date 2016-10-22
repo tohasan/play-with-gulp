@@ -26,6 +26,8 @@ const del = require('del');
 const newer = require('gulp-newer');
 // Adds vendor prefixes in css to extend cross-browser support
 const autoprefixer = require('gulp-autoprefixer');
+// Notifications during build (for example, about errors)
+const notify = require('gulp-notify');
 
 // Plugins for caching:
 //      - gulp-remember - caches files by name
@@ -51,6 +53,12 @@ gulp.task('styles', function () {
         .pipe(debug({ title: 'src' }))
         .pipe(gulpIf(isDev, sourcemaps.init()))
         .pipe(stylus())
+        .on('error', notify.onError(function (err) {
+            return {
+                title: 'styles',
+                message: err.message
+            };
+        }))
         .pipe(autoprefixer())
         .pipe(gulpIf(isDev, sourcemaps.write('.')))
         .pipe(debug({ title: 'stylus' }))
