@@ -34,6 +34,8 @@ const notify = require('gulp-notify');
 //      - multipipe,
 //      - stream-combiner2
 const plumber = require('gulp-plumber');
+// Allows write simple pipes as streams of object
+const through2 = require('through2').obj;
 
 // Plugins for caching:
 //      - gulp-remember - caches files by name
@@ -87,6 +89,17 @@ gulp.task('pages', function () {
         .pipe(newer('public'))
         .pipe(debug({ title: 'pages' }))
         .pipe(gulp.dest('public'));
+});
+
+gulp.task('through', function () {
+    return gulp.src('src/**')
+        .pipe(through2(function (file, encoding, callback) {
+            const fileBak = file.clone();
+            fileBak.path += '.bak';
+            this.push(fileBak);
+            callback(null, file);
+        }))
+        .pipe(gulp.dest('dest'));
 });
 
 // Watch uses chokidar inside yourself.
